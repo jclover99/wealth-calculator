@@ -1,0 +1,1129 @@
+# wealth-calculator
+複利計算機 - 計算投資收益與財富成長軌跡的互動式工具
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="複利計算機 - 計算投資收益，規劃財富自由之路">
+    <meta name="keywords" content="複利計算, 投資計算, 財富規劃, 理財工具">
+    <title>發財計算機 - 財富成長模擬器</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft JhengHei', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 3em;
+            font-weight: 900;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, #fff, #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            font-size: 1.3em;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+        
+        .mode-switcher {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 30px;
+        }
+        
+        .mode-btn {
+            flex: 1;
+            background: transparent;
+            color: rgba(255,255,255,0.8);
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .mode-btn.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255,255,255,0.1);
+        }
+        
+        .mode-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        .calculator-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .input-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .input-section h2 {
+            font-size: 1.8em;
+            margin-bottom: 30px;
+            color: #667eea;
+            font-weight: 800;
+            text-align: center;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+        }
+        
+        .input-group label {
+            display: block;
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        
+        .input-wrapper {
+            position: relative;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 15px;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.8);
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: white;
+        }
+        
+        .unit {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            font-weight: 600;
+        }
+        
+        .slider-container {
+            margin-top: 15px;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+        }
+        
+        .calc-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 15px;
+            font-size: 1.3em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 20px;
+        }
+        
+        .calc-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .result-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .result-section h2 {
+            font-size: 1.8em;
+            margin-bottom: 30px;
+            color: #667eea;
+            font-weight: 800;
+            text-align: center;
+            transition: color 0.3s ease;
+        }
+        
+        .result-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .result-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(116, 75, 162, 0.1));
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+        }
+        
+        .result-value {
+            font-size: 2.2em;
+            font-weight: 900;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+        
+        .result-label {
+            font-size: 1em;
+            color: #666;
+            font-weight: 600;
+        }
+        
+        .profit-highlight {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .profit-highlight .value {
+            font-size: 2.5em;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+        
+        .profit-highlight .label {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 30px;
+        }
+        
+        .chart-container h3 {
+            font-size: 1.5em;
+            margin-bottom: 25px;
+            color: #667eea;
+            font-weight: 800;
+            text-align: center;
+        }
+        
+        .chart {
+            width: 100%;
+            height: 300px;
+            position: relative;
+            background: linear-gradient(to top, rgba(102, 126, 234, 0.1), transparent);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .chart-bars {
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 20px;
+        }
+        
+        .chart-bar {
+            width: 40px;
+            background: linear-gradient(to top, #667eea, #764ba2);
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            transition: all 0.5s ease;
+            cursor: pointer;
+        }
+        
+        .chart-bar:hover {
+            filter: brightness(1.2);
+            transform: scale(1.05);
+        }
+        
+        .chart-bar .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .chart-bar:hover .tooltip {
+            opacity: 1;
+        }
+        
+        .year-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8em;
+            color: #666;
+            font-weight: 600;
+        }
+        
+        .scenarios {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .scenarios h3 {
+            font-size: 1.5em;
+            margin-bottom: 25px;
+            color: #667eea;
+            font-weight: 800;
+            text-align: center;
+        }
+        
+        .scenario-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .scenario-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(116, 75, 162, 0.1));
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .scenario-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+        
+        .scenario-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .scenario-desc {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+        
+        .scenario-result {
+            font-size: 1.5em;
+            font-weight: 900;
+            color: #11998e;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .footer p {
+            margin-bottom: 10px;
+        }
+        
+        .footer a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+        }
+        
+        .share-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            margin: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .share-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .calculator-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .result-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2.2em;
+            }
+            
+            .chart {
+                height: 250px;
+            }
+            
+            .chart-bar {
+                width: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 發財計算機</h1>
+            <p>見證複利魔法，算出你的暴富軌跡 🚀 離財富自由還有幾年？</p>
+        </div>
+        
+        <!-- 模式切換 -->
+        <div class="mode-switcher">
+            <button class="mode-btn active" onclick="switchMode('forward')" id="forwardMode">
+                📈 我能變多有錢
+            </button>
+            <button class="mode-btn" onclick="switchMode('reverse')" id="reverseMode">
+                🎯 多久能暴富
+            </button>
+        </div>
+
+        <div class="calculator-container">
+            <!-- 正向計算輸入區域 -->
+            <div class="input-section" id="forwardInputs">
+                <h2>🎯 設定你的發財參數</h2>
+                
+                <div class="input-group">
+                    <label for="principal">啟動資金（爸媽贊助多少）</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="principal" value="100000" min="1000" max="10000000">
+                        <span class="unit">元</span>
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="principalSlider" min="10000" max="1000000" value="100000" step="10000">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="rate">年化報酬率（多會賺錢）</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="rate" value="8" min="0.1" max="30" step="0.1">
+                        <span class="unit">%</span>
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="rateSlider" min="1" max="25" value="8" step="0.5">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="years">躺平幾年後收錢</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="years" value="10" min="1" max="50">
+                        <span class="unit">年</span>
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="yearsSlider" min="1" max="40" value="10" step="1">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="monthly">每月定期上貢（少喝幾杯飲料）</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="monthly" value="5000" min="0" max="100000">
+                        <span class="unit">元</span>
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="monthlySlider" min="0" max="50000" value="5000" step="1000">
+                    </div>
+                </div>
+                
+                <button class="calc-btn" onclick="calculateCompound()">
+                    🔥 算出我的暴富指數
+                </button>
+            </div>
+            
+            <!-- 反向計算輸入區域 -->
+            <div class="input-section hidden" id="reverseInputs">
+                <h2>🎯 設定你的暴富目標</h2>
+                
+                <div class="input-group">
+                    <label for="targetAmount">目標金額（想要多少小錢錢）</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="targetAmount" value="1000000" min="100000" max="50000000">
+                        <span class="unit">元</span>
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="targetSlider" min="100000" max="5000000" value="1000000" step="100000">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="targetRate">預期年賺錢能力</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="targetRate" value="8" min="1" max="25" step="0.1">
+                        <span class="unit">%</span>
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="targetRateSlider" min="1" max="20" value="8" step="0.5">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="initialAmount">現有家底（口袋裡有多少）</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="initialAmount" value="50000" min="0" max="1000000">
+                        <span class="unit">元</span>
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="initialSlider" min="0" max="500000" value="50000" step="10000">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="targetMonthly">每月能省下多少（戒飲料戒宵夜）</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="targetMonthly" value="10000" min="1000" max="100000">
+                        <span class="unit">元</span>
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" class="slider" id="targetMonthlySlider" min="1000" max="50000" value="10000" step="1000">
+                    </div>
+                </div>
+                
+                <button class="calc-btn" onclick="calculateReverse()">
+                    🎯 算出我多久能發財
+                </button>
+            </div>
+            
+            <!-- 結果區域 -->
+            <div class="result-section">
+                <h2>📊 你的發財預測</h2>
+                
+                <div class="result-cards">
+                    <div class="result-card">
+                        <div class="result-value" id="finalAmount">$0</div>
+                        <div class="result-label">最終身價</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value" id="totalInvested">$0</div>
+                        <div class="result-label">總共砸了多少錢</div>
+                    </div>
+                </div>
+                
+                <div class="profit-highlight">
+                    <div class="value" id="totalProfit">$0</div>
+                    <div class="label">複利幫你賺的 (錢滾錢magic) ✨</div>
+                </div>
+                
+                <div class="result-cards">
+                    <div class="result-card">
+                        <div class="result-value" id="monthlyProfit">$0</div>
+                        <div class="result-label">月平均爽賺</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value" id="roi">0%</div>
+                        <div class="result-label">整體暴富指數</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 圖表區域 -->
+        <div class="chart-container hidden" id="chartContainer">
+            <h3>📈 暴富軌跡圖（看錢錢怎麼長大）</h3>
+            <div class="chart">
+                <div class="chart-bars" id="chartBars">
+                    <!-- 圖表柱狀圖會在這裡生成 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 投資情境比較 -->
+        <div class="scenarios hidden" id="scenarios">
+            <h3>🎭 不同躺賺策略比較（選你的發財路線）</h3>
+            <div class="scenario-grid" id="scenarioGrid">
+                <!-- 情境卡片會在這裡生成 -->
+            </div>
+        </div>
+        
+        <!-- 頁尾 -->
+        <div class="footer">
+            <p>📚 投資有風險，理財需謹慎。本工具僅供參考，不構成投資建議。</p>
+            <p>💡 記住：最好的投資是投資自己的知識和能力！</p>
+            <div style="margin-top: 20px;">
+                <button class="share-btn" onclick="shareResult()">📱 分享結果</button>
+                <button class="share-btn" onclick="resetCalculator()">🔄 重新計算</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 格式化金額顯示
+        function formatMoney(amount) {
+            if (amount >= 1000000000) {
+                return (amount / 1000000000).toFixed(1) + '億';
+            } else if (amount >= 10000) {
+                return (amount / 10000).toFixed(1) + '萬';
+            } else {
+                return Math.round(amount).toLocaleString();
+            }
+        }
+        
+        // 模式切換功能
+        function switchMode(mode) {
+            const forwardBtn = document.getElementById('forwardMode');
+            const reverseBtn = document.getElementById('reverseMode');
+            const forwardInputs = document.getElementById('forwardInputs');
+            const reverseInputs = document.getElementById('reverseInputs');
+            
+            if (mode === 'forward') {
+                forwardBtn.classList.add('active');
+                reverseBtn.classList.remove('active');
+                forwardInputs.classList.remove('hidden');
+                reverseInputs.classList.add('hidden');
+                calculateCompound();
+            } else {
+                reverseBtn.classList.add('active');
+                forwardBtn.classList.remove('active');
+                reverseInputs.classList.remove('hidden');
+                forwardInputs.classList.add('hidden');
+                calculateReverse();
+            }
+        }
+        
+        // 複利計算主函數
+        function calculateCompound() {
+            const principal = parseFloat(document.getElementById('principal').value) || 0;
+            const rate = parseFloat(document.getElementById('rate').value) / 100 || 0;
+            const years = parseInt(document.getElementById('years').value) || 0;
+            const monthly = parseFloat(document.getElementById('monthly').value) || 0;
+            
+            if (principal <= 0 || rate <= 0 || years <= 0) {
+                return;
+            }
+            
+            let yearlyData = [];
+            let currentAmount = principal;
+            let totalInvested = principal;
+            
+            for (let year = 1; year <= years; year++) {
+                const yearStartAmount = currentAmount;
+                const yearlyContribution = monthly * 12;
+                const interestEarned = (currentAmount + yearlyContribution / 2) * rate;
+                
+                currentAmount = currentAmount * (1 + rate) + yearlyContribution * (1 + rate / 2);
+                totalInvested += yearlyContribution;
+                
+                yearlyData.push({
+                    year: year,
+                    startAmount: yearStartAmount,
+                    contribution: yearlyContribution,
+                    interest: interestEarned,
+                    endAmount: currentAmount
+                });
+            }
+            
+            const finalAmount = currentAmount;
+            const totalProfit = finalAmount - totalInvested;
+            const monthlyProfit = totalProfit / (years * 12);
+            const roi = ((finalAmount - totalInvested) / totalInvested) * 100;
+            
+            // 更新結果顯示
+            document.getElementById('finalAmount').textContent = '$' + formatMoney(finalAmount);
+            document.getElementById('totalInvested').textContent = '$' + formatMoney(totalInvested);
+            document.getElementById('totalProfit').textContent = '$' + formatMoney(totalProfit);
+            document.getElementById('monthlyProfit').textContent = '$' + formatMoney(monthlyProfit);
+            document.getElementById('roi').textContent = roi.toFixed(1) + '%';
+            
+            // 重置結果標題
+            const resultSection = document.querySelector('.result-section h2');
+            resultSection.innerHTML = '📊 你的發財預測';
+            resultSection.style.color = '#667eea';
+            
+            // 顯示圖表和表格
+            showChart(yearlyData);
+            showScenarios(principal, rate, years, monthly);
+            
+            // 顯示隱藏的區域
+            ['chartContainer', 'scenarios'].forEach(function(id) {
+                const element = document.getElementById(id);
+                element.classList.remove('hidden');
+                element.classList.add('fade-in');
+            });
+            
+            // 存儲結果用於分享
+            window.currentResult = {
+                finalAmount: finalAmount,
+                totalInvested: totalInvested,
+                totalProfit: totalProfit,
+                years: years,
+                roi: roi
+            };
+        }
+        
+        // 反向計算：達成目標需要多久
+        function calculateReverse() {
+            const targetAmount = parseFloat(document.getElementById('targetAmount').value) || 0;
+            const rate = parseFloat(document.getElementById('targetRate').value) / 100 || 0;
+            const initialAmount = parseFloat(document.getElementById('initialAmount').value) || 0;
+            const monthlyAmount = parseFloat(document.getElementById('targetMonthly').value) || 0;
+            
+            if (targetAmount <= 0 || rate <= 0) {
+                return;
+            }
+            
+            // 計算需要的年數
+            let years = 0;
+            let currentAmount = initialAmount;
+            let yearlyData = [];
+            let totalInvested = initialAmount;
+            
+            while (currentAmount < targetAmount && years < 50) {
+                years++;
+                const yearStartAmount = currentAmount;
+                const yearlyContribution = monthlyAmount * 12;
+                const interestEarned = (currentAmount + yearlyContribution / 2) * rate;
+                
+                currentAmount = currentAmount * (1 + rate) + yearlyContribution * (1 + rate / 2);
+                totalInvested += yearlyContribution;
+                
+                yearlyData.push({
+                    year: years,
+                    startAmount: yearStartAmount,
+                    contribution: yearlyContribution,
+                    interest: interestEarned,
+                    endAmount: currentAmount
+                });
+            }
+            
+            const finalAmount = currentAmount;
+            const totalProfit = finalAmount - totalInvested;
+            const monthlyProfit = totalProfit / (years * 12);
+            const roi = ((finalAmount - totalInvested) / totalInvested) * 100;
+            
+            // 更新結果顯示
+            document.getElementById('finalAmount').textContent = '$' + formatMoney(finalAmount);
+            document.getElementById('totalInvested').textContent = '$' + formatMoney(totalInvested);
+            document.getElementById('totalProfit').textContent = '$' + formatMoney(totalProfit);
+            document.getElementById('monthlyProfit').textContent = '$' + formatMoney(monthlyProfit);
+            document.getElementById('roi').textContent = roi.toFixed(1) + '%';
+            
+            // 顯示目標達成信息
+            updateResultTitle(years, targetAmount, currentAmount >= targetAmount);
+            
+            // 顯示圖表和表格
+            showChart(yearlyData);
+            showReverseScenarios(targetAmount, initialAmount, monthlyAmount);
+            
+            // 顯示隱藏的區域
+            ['chartContainer', 'scenarios'].forEach(function(id) {
+                const element = document.getElementById(id);
+                element.classList.remove('hidden');
+                element.classList.add('fade-in');
+            });
+            
+            // 存儲結果用於分享
+            window.currentResult = {
+                finalAmount: finalAmount,
+                totalInvested: totalInvested,
+                totalProfit: totalProfit,
+                years: years,
+                roi: roi,
+                targetAmount: targetAmount,
+                achieved: currentAmount >= targetAmount
+            };
+        }
+        
+        // 更新結果標題
+        function updateResultTitle(years, targetAmount, achieved) {
+            const resultSection = document.querySelector('.result-section h2');
+            if (achieved) {
+                resultSection.innerHTML = '🎉 爽！' + years + '年後就能達標';
+                resultSection.style.color = '#11998e';
+            } else {
+                resultSection.innerHTML = '😅 需要超過50年才能達成（太難了吧）';
+                resultSection.style.color = '#e74c3c';
+            }
+        }
+        
+        // 顯示圖表
+        function showChart(data) {
+            const chartBars = document.getElementById('chartBars');
+            chartBars.innerHTML = '';
+            
+            const maxAmount = Math.max.apply(Math, data.map(function(d) { return d.endAmount; }));
+            
+            data.forEach(function(yearData, index) {
+                const bar = document.createElement('div');
+                bar.className = 'chart-bar';
+                
+                const height = (yearData.endAmount / maxAmount) * 250;
+                bar.style.height = height + 'px';
+                
+                bar.innerHTML = '<div class="tooltip">第' + yearData.year + '年<br>身價$' + formatMoney(yearData.endAmount) + '</div><div class="year-label">' + yearData.year + '</div>';
+                
+                chartBars.appendChild(bar);
+            });
+        }
+        
+        // 顯示不同情境比較
+        function showScenarios(principal, baseRate, years, monthly) {
+            const scenarios = [
+                { name: '佛系躺賺', desc: '定存、債券', rate: 0.02, emoji: '🧘‍♂️' },
+                { name: '穩健致富', desc: 'ETF、基金', rate: 0.06, emoji: '📊' },
+                { name: '積極暴富', desc: '個股、成長股', rate: 0.10, emoji: '📈' },
+                { name: 'YOLO梭哈', desc: '加密貨幣、期權', rate: 0.15, emoji: '🚀' }
+            ];
+            
+            const scenarioGrid = document.getElementById('scenarioGrid');
+            scenarioGrid.innerHTML = '';
+            
+            scenarios.forEach(function(scenario) {
+                const finalAmount = calculateScenario(principal, scenario.rate, years, monthly);
+                const card = document.createElement('div');
+                card.className = 'scenario-card';
+                card.innerHTML = '<div class="scenario-title">' + scenario.emoji + ' ' + scenario.name + '</div><div class="scenario-desc">' + scenario.desc + '<br>年賺 ' + (scenario.rate * 100).toFixed(1) + '%</div><div class="scenario-result">$' + formatMoney(finalAmount) + '</div>';
+                scenarioGrid.appendChild(card);
+            });
+        }
+        
+        // 反向計算的情境比較
+        function showReverseScenarios(targetAmount, initialAmount, monthlyAmount) {
+            const scenarios = [
+                { name: '多投點錢', desc: '每月多砸3000元', monthly: monthlyAmount + 3000, emoji: '💪' },
+                { name: '選更猛的', desc: '買成長股衝一波', rate: 0.12, monthly: monthlyAmount, emoji: '🚀' },
+                { name: '加碼本金', desc: '多投入10萬啟動金', initial: initialAmount + 100000, monthly: monthlyAmount, emoji: '💰' },
+                { name: '全面開火', desc: '多投資+高報酬', monthly: monthlyAmount + 2000, rate: 0.10, emoji: '⚡' }
+            ];
+            
+            const scenarioGrid = document.getElementById('scenarioGrid');
+            scenarioGrid.innerHTML = '';
+            
+            const baseRate = parseFloat(document.getElementById('targetRate').value) / 100;
+            
+            scenarios.forEach(function(scenario) {
+                const rate = scenario.rate || baseRate;
+                const monthly = scenario.monthly || monthlyAmount;
+                const initial = scenario.initial || initialAmount;
+                
+                const years = calculateYearsNeeded(targetAmount, rate, initial, monthly);
+                const card = document.createElement('div');
+                card.className = 'scenario-card';
+                card.innerHTML = '<div class="scenario-title">' + scenario.emoji + ' ' + scenario.name + '</div><div class="scenario-desc">' + scenario.desc + '</div><div class="scenario-result">' + (years < 50 ? years + '年就發財' : '太難了超過50年') + '</div>';
+                scenarioGrid.appendChild(card);
+            });
+        }
+        
+        // 計算達成目標需要的年數
+        function calculateYearsNeeded(targetAmount, rate, initialAmount, monthlyAmount) {
+            let years = 0;
+            let currentAmount = initialAmount;
+            
+            while (currentAmount < targetAmount && years < 50) {
+                years++;
+                currentAmount = currentAmount * (1 + rate) + monthlyAmount * 12 * (1 + rate / 2);
+            }
+            
+            return years;
+        }
+        
+        // 計算特定情境的結果
+        function calculateScenario(principal, rate, years, monthly) {
+            let amount = principal;
+            for (let year = 1; year <= years; year++) {
+                amount = amount * (1 + rate) + monthly * 12 * (1 + rate / 2);
+            }
+            return amount;
+        }
+        
+        // 分享結果
+        function shareResult() {
+            if (!window.currentResult) {
+                alert('請先計算結果！');
+                return;
+            }
+            
+            const result = window.currentResult;
+            let shareText = `💰 我的發財計算結果：\n`;
+            shareText += `🎯 最終身價：$${formatMoney(result.finalAmount)}\n`;
+            shareText += `💵 總投入：$${formatMoney(result.totalInvested)}\n`;
+            shareText += `✨ 複利賺了：$${formatMoney(result.totalProfit)}\n`;
+            shareText += `📈 暴富指數：${result.roi.toFixed(1)}%\n`;
+            shareText += `⏰ 投資年限：${result.years}年\n\n`;
+            shareText += `快來試試你的發財軌跡！`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: '發財計算機 - 我的投資結果',
+                    text: shareText,
+                    url: window.location.href
+                });
+            } else {
+                // 複製到剪貼板
+                navigator.clipboard.writeText(shareText).then(function() {
+                    alert('結果已複製到剪貼板！');
+                });
+            }
+        }
+        
+        // 重置計算器
+        function resetCalculator() {
+            // 重置所有輸入值為預設值
+            document.getElementById('principal').value = 100000;
+            document.getElementById('rate').value = 8;
+            document.getElementById('years').value = 10;
+            document.getElementById('monthly').value = 5000;
+            
+            document.getElementById('targetAmount').value = 1000000;
+            document.getElementById('targetRate').value = 8;
+            document.getElementById('initialAmount').value = 50000;
+            document.getElementById('targetMonthly').value = 10000;
+            
+            // 同步滑桿
+            syncAllSliders();
+            
+            // 重新計算
+            if (document.getElementById('forwardMode').classList.contains('active')) {
+                calculateCompound();
+            } else {
+                calculateReverse();
+            }
+        }
+        
+        // 同步所有滑桿
+        function syncAllSliders() {
+            const inputs = [
+                { input: 'principal', slider: 'principalSlider' },
+                { input: 'rate', slider: 'rateSlider' },
+                { input: 'years', slider: 'yearsSlider' },
+                { input: 'monthly', slider: 'monthlySlider' },
+                { input: 'targetAmount', slider: 'targetSlider' },
+                { input: 'targetRate', slider: 'targetRateSlider' },
+                { input: 'initialAmount', slider: 'initialSlider' },
+                { input: 'targetMonthly', slider: 'targetMonthlySlider' }
+            ];
+            
+            inputs.forEach(function(item) {
+                const input = document.getElementById(item.input);
+                const slider = document.getElementById(item.slider);
+                if (input && slider) {
+                    slider.value = input.value;
+                }
+            });
+        }
+        
+        // 同步滑桿和輸入框
+        function syncInputs() {
+            const inputs = [
+                { input: 'principal', slider: 'principalSlider' },
+                { input: 'rate', slider: 'rateSlider' },
+                { input: 'years', slider: 'yearsSlider' },
+                { input: 'monthly', slider: 'monthlySlider' },
+                { input: 'targetAmount', slider: 'targetSlider' },
+                { input: 'targetRate', slider: 'targetRateSlider' },
+                { input: 'initialAmount', slider: 'initialSlider' },
+                { input: 'targetMonthly', slider: 'targetMonthlySlider' }
+            ];
+            
+            inputs.forEach(function(item) {
+                const input = document.getElementById(item.input);
+                const slider = document.getElementById(item.slider);
+                
+                if (input && slider) {
+                    input.addEventListener('input', function() {
+                        slider.value = input.value;
+                        if (document.getElementById('forwardMode').classList.contains('active')) {
+                            calculateCompound();
+                        } else {
+                            calculateReverse();
+                        }
+                    });
+                    
+                    slider.addEventListener('input', function() {
+                        input.value = slider.value;
+                        if (document.getElementById('forwardMode').classList.contains('active')) {
+                            calculateCompound();
+                        } else {
+                            calculateReverse();
+                        }
+                    });
+                }
+            });
+        }
+        
+        // 儲存和加載設定
+        function saveSettings() {
+            const settings = {
+                principal: document.getElementById('principal').value,
+                rate: document.getElementById('rate').value,
+                years: document.getElementById('years').value,
+                monthly: document.getElementById('monthly').value,
+                targetAmount: document.getElementById('targetAmount').value,
+                targetRate: document.getElementById('targetRate').value,
+                initialAmount: document.getElementById('initialAmount').value,
+                targetMonthly: document.getElementById('targetMonthly').value,
+                mode: document.getElementById('forwardMode').classList.contains('active') ? 'forward' : 'reverse'
+            };
+            localStorage.setItem('wealth-calculator-settings', JSON.stringify(settings));
+        }
+        
+        function loadSettings() {
+            const saved = localStorage.getItem('wealth-calculator-settings');
+            if (saved) {
+                const settings = JSON.parse(saved);
+                
+                document.getElementById('principal').value = settings.principal || 100000;
+                document.getElementById('rate').value = settings.rate || 8;
+                document.getElementById('years').value = settings.years || 10;
+                document.getElementById('monthly').value = settings.monthly || 5000;
+                document.getElementById('targetAmount').value = settings.targetAmount || 1000000;
+                document.getElementById('targetRate').value = settings.targetRate || 8;
+                document.getElementById('initialAmount').value = settings.initialAmount || 50000;
+                document.getElementById('targetMonthly').value = settings.targetMonthly || 10000;
+                
+                syncAllSliders();
+                
+                if (settings.mode) {
+                    switchMode(settings.mode);
+                }
+            }
+        }
+        
+        // 自動保存設定
+        function autoSave() {
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(function(input) {
+                input.addEventListener('change', saveSettings);
+            });
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            syncInputs();
+            autoSave();
+            loadSettings();
+            if (!localStorage.getItem('wealth-calculator-settings')) {
+                switchMode('forward');
+            }
+        });
+    </script>
+</body>
+</html>
